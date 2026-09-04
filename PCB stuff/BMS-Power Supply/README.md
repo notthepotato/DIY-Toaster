@@ -12,7 +12,7 @@ Features
  
 ![PCB TOP](Images/3D view top.png)
 
-![PCB BOTTOM](Images/3D view Bottom.png)
+![PCB BOTTOM](Images/3D/ view/ Bottom.png)
 
 09/03/2026
 -
