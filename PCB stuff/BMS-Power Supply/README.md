@@ -8,7 +8,11 @@ Features
 - Input and Output current sensing 
 - enough headers to use all 10A 
 - JST headers breaking out a bunch of things like fans and I2C and Serial
-- A NEOPIXEL and NEOPIXEL pins, as well as easy to get to Test Points 
+- A NEOPIXEL and NEOPIXEL pins, as well as easy to get to Test Points
+ 
+![PCB TOP](Images/3D view top.png)
+
+![PCB BOTTOM](Images/3D view Bottom.png)
 
 09/03/2026
 -
