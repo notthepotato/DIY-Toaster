@@ -10,9 +10,9 @@ Features
 - JST headers breaking out a bunch of things like fans and I2C and Serial
 - A NEOPIXEL and NEOPIXEL pins, as well as easy to get to Test Points
  
-![PCB TOP](Images/3D view top.png)
+![PCB TOP](Images/3Dviewtop.png)
 
-![PCB BOTTOM](Images/3D/ view/ Bottom.png)
+![PCB BOTTOM](Images/3DviewBottom.png)
 
 09/03/2026
 -
