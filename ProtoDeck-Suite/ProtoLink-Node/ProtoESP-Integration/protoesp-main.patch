@@ -1,0 +1,44 @@
+--- a/ProtoESP-Controller/src/main.cpp
++++ b/ProtoESP-Controller/src/main.cpp
+@@ -84,6 +84,12 @@
+ #include "Adafruit_VL53L1X.h"
+ Adafruit_VL53L1X vl53;
+ 
++//--------------------------------//ProtoLink: ESP-NOW link to a ProtoDeck controller
++#include "ProtoLinkNode.h"
++void protoLinkBegin();
++void protoLinkLoop();
++uint32_t protoLinkVisorColor();
++
+ //--------------------------------//realtime logger
+ #define LOG_BUFFER_SIZE (50 * 1024)  // 50 KB
+ 
+@@ -668,6 +674,7 @@
+   startWiFiWeb();
+ 
+   getFilesFunc();
++  protoLinkBegin(); //ProtoLink: after WiFi AP + animation list are ready
+   if(cfg.bleEna) { //you can disable BLE in config
+     if(!startBLE()) {
+       logPrint(F("[E] An Error has occurred while starting BLE!"));
+@@ -808,8 +815,11 @@
+   FdisplayVisor = true;
+ }
+ 
++#include "ProtoLinkGlue.h" //ProtoLink: needs the globals above
++
+ void loop() {
+   ElegantOTA.loop();
++  protoLinkLoop(); //ProtoLink
+   //--------------------------------//EAR Leds render
+   if(earPresent) {
+     if(earsNow->type == 0) { //custom
+@@ -887,7 +897,7 @@
+       currentVisorFrame++;
+       lastMillsVisor = millis();
+       if(currentVisorFrame == visorNow->numOfFrames) { currentVisorFrame = 0; }
+-      setAllVisor(visorLedsNEW,0,currentVisorFrame); //set visor leds
++      setAllVisor(visorLedsNEW,protoLinkVisorColor(),currentVisorFrame); //set visor leds (ProtoLink tint, 0 = anim colours)
+       if(blushPresent) {
+         for(int x = 0; x<blushLedsNum; x++) { blushLeds[x] = visorNow->frames[currentVisorFrame].ledsBlush[x]; } //set blush leds
+         FdisplayBlush = true;
