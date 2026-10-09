@@ -18,8 +18,9 @@ lists the nodes it finds, and a glitchy logo reveal.
 | `ProtoLink-Node/` | any ESP32 | Arduino library that makes a board discoverable/controllable by the deck |
 | `ProtoLink-Node/ProtoESP-Integration/` | your helmet (ProtoESP) | Drop-in glue + patch for [NCPlyn/ProtogenHelmet-ESP32](https://github.com/NCPlyn/ProtogenHelmet-ESP32) |
 | `ProtoLink-Node/examples/GenericNeoPixelNode/` | any ESP32 + WS2812 strip | A tail / ears / chest-panel node - also the easiest way to test the deck on your desk |
+| `ToasterPDP-Firmware/` | XIAO ESP32-C6 on the DIY-Toaster power board | Battery voltage/current, 5 V rail current, fuel gauge, warnings, fan + NeoPixels; shows up on the deck as a `power` node |
 
-All three were compile-tested against **arduino-esp32 3.3.12** (ProtoESP at commit `101b4d7`). The UI and boot
+All of these were compile-tested against **arduino-esp32 3.3.12** (ProtoESP at commit `101b4d7`). The UI and boot
 sequence were rendered with real LVGL in a desktop simulator (that's where the screenshots come from), but
 they have **not** been run on physical hardware yet - see *First flash checklist* below.
 
@@ -54,13 +55,16 @@ page, BLE remote, OLED and everything else; it just also speaks ESP-NOW.
 For anything else (tail, ears, a test strip), flash `examples/GenericNeoPixelNode` after setting the pin,
 LED count and name at the top.
 
+For the power distribution board, flash `ToasterPDP-Firmware/` - see
+[`ToasterPDP-Firmware/README.md`](ToasterPDP-Firmware/README.md) for the one-time battery setup and calibration.
+
 ## 3. Use it
 
 | Page | What it does |
 |---|---|
 | **NODES** | SCAN sweeps channels 1-13; tap a card to make it the target |
 | **CONTROL** | animation grid (current one is lit), prev/next, visor/ears/fan sliders, CUSTOM/RAINBOW visor, identify, native, LEDs off, save |
-| **POWER** | live voltage / current / power / temperature tiles, 30 s current+voltage chart with peak/avg, voice level, boop/tilt/talking flags. An amber **EST** badge means there's no INA219 and current is estimated from what the LEDs are showing |
+| **POWER** | live voltage / current / power / temperature tiles, 30 s current+voltage chart with peak/avg, voice level, boop/tilt/talking flags. An amber **EST** badge means there's no INA219 and current is estimated from what the LEDs are showing. For a `power` node (the ToasterPDP) the bottom bar shows **BATTERY %** instead of voice |
 | **FX** | 12 preset slots. Edit zone, effect, two colours (hue/sat/val), speed, brightness, with a live LED preview strip. **APPLY** sends it, **SAVE** stores the slot, **LIVE** streams changes while you drag |
 | **TERM** | the same terminal as USB serial, with quick-command chips, history and a keyboard |
 | **SYS** | backlight, sleep timeout, touch clicks (V1.3+ buzzer), skip boot, scan on boot, home channel, radio stats, replay boot |
@@ -134,6 +138,6 @@ both sides if you care.
 
 - ProtoESP by **NCPlyn** (GPL-3.0). `ProtoLinkGlue.h` is meant to be built into ProtoESP and is offered under
   GPL-3.0 to match; keep NCPlyn's credits, and if you sell builds, please donate to the project as the author asks.
-- ProtoDeck controller + ProtoLink node library: MIT.
+- ProtoDeck controller, ProtoLink node library and ToasterPDP firmware: MIT.
 - [LVGL](https://lvgl.io) (MIT). JetBrains Mono font (SIL OFL 1.1, see `ProtoDeck/FONT_LICENSE_OFL.txt`).
 - Board pin map and helper-MCU commands from Elecrow's official CrowPanel Advance 7.0 examples.

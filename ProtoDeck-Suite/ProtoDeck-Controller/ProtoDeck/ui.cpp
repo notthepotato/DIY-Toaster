@@ -648,14 +648,17 @@ void controlRefresh() {
 }
 
 // ================================================================== POWER
-lv_obj_t *pwSub, *tileVal[4], *tileUnit[4], *tileEst[4], *chart, *chartStats, *micBar, *micVal, *pwInfo, *flagBox;
+lv_obj_t *pwSub, *tileVal[4], *tileUnit[4], *tileEst[4], *chart, *chartStats, *micBar, *micVal, *micLbl, *pwInfo, *flagBox;
 lv_chart_series_t *serI, *serV;
 float histI[UI_CHART_POINTS];
 int histN = 0, histHead = 0, chartFor = -2;
+float chartVmax = 6.0f;  // voltage axis top, grows for e.g. a 24 V battery
 
 void chartReset() {
   lv_chart_set_all_value(chart, serI, LV_CHART_POINT_NONE);
   lv_chart_set_all_value(chart, serV, LV_CHART_POINT_NONE);
+  chartVmax = 6.0f;
+  lv_chart_set_range(chart, LV_CHART_AXIS_SECONDARY_Y, 0, 600);
   histN = histHead = 0;
   chartFor = radio::selected();
 }
@@ -712,7 +715,7 @@ void buildPower() {
 
   lv_obj_t *mc = card(pg, 330, 62);
   lv_obj_set_pos(mc, 0, 354);
-  label(mc, "VOICE", M8, C_DIM);
+  micLbl = label(mc, "VOICE", M8, C_DIM);
   micBar = lv_bar_create(mc);
   lv_obj_set_size(micBar, 250, 12);
   lv_obj_set_pos(micBar, 0, 20);
@@ -769,10 +772,20 @@ void powerOnTelemetry(Peer *p) {
   int top = (int)(ceilf(fmaxf(mx * 1.25f, 200.0f) / 250.0f) * 250.0f);
   lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 0, top);
   lv_chart_set_next_value(chart, serI, (int32_t)iA);
+  if (!isnan(t.busV) && t.busV > chartVmax * 0.95f) {  // rescale in 6 V steps
+    chartVmax = ceilf(t.busV * 1.15f / 6.0f) * 6.0f;
+    lv_chart_set_range(chart, LV_CHART_AXIS_SECONDARY_Y, 0, (int32_t)(chartVmax * 100));
+  }
   lv_chart_set_next_value(chart, serV, isnan(t.busV) ? LV_CHART_POINT_NONE : (int32_t)(t.busV * 100));
   lv_label_set_text_fmt(chartStats, "PEAK %.2f A   AVG %.2f A   SCALE %.2f A", mx / 1000.0f,
                         histN ? sum / histN / 1000.0f : 0.0f, top / 1000.0f);
 
+  // power nodes (e.g. the ToasterPDP) report battery % in the micLevel field
+  bool isPower = !strcmp(p->hello.kind, "power");
+  uint32_t barCol = !isPower ? C_GREEN : t.micLevel > 50 ? C_GREEN : t.micLevel > 20 ? C_AMBER : C_RED;
+  lv_label_set_text(micLbl, isPower ? "BATTERY" : "VOICE");
+  lv_obj_set_style_bg_color(micBar, hex(barCol), LV_PART_INDICATOR);
+  lv_obj_set_style_text_color(micVal, hex(barCol), 0);
   lv_bar_set_value(micBar, t.micLevel, LV_ANIM_ON);
   lv_label_set_text_fmt(micVal, "%3u%%", t.micLevel);
   uint32_t s = t.uptimeMs / 1000;
@@ -792,7 +805,7 @@ void powerRefresh() {
   if (!p) { lv_label_set_text(pwSub, "NO TARGET"); return; }
   uint32_t age = p->hasTele ? (millis() - p->teleAt) : 0;
   lv_label_set_text_fmt(pwSub, "%s  //  %s  //  %s", p->hello.name,
-                        p->hasTele && (p->tele.flags & PL_TF_ESTIMATED) ? "ESTIMATED FROM LED OUTPUT" : "INA219 SENSOR",
+                        p->hasTele && (p->tele.flags & PL_TF_ESTIMATED) ? "ESTIMATED FROM LED OUTPUT" : "MEASURED",
                         !p->hasTele ? "WAITING FOR DATA" : age < 2000 ? "LIVE" : "STALE");
 }
 
@@ -1399,6 +1412,7 @@ void showPage(int i) {
       radio::getAnims(radio::selected());
     controlRefresh();
   }
+  if (i == P_NODES) nodesRefresh();
   if (i == P_POWER) powerRefresh();
   if (i == P_SYS) sysRefresh();
   if (i == P_TERM) termDirty = true;
